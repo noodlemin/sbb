@@ -43,11 +43,22 @@ weapon_speed = 10
 weapon_cooldown = 500
 last_shot_time = 0
 
-# # load the enemy
-# enemy  = pygame.image.load('./images/enemy.png')
-# character_size = character.get_rect().size # rectangular shape
-# character_width = character_size[0]
-# character_height = character_size[1]
+# load the balls
+ball_imgs = [pygame.image.load(f'./images/balloon{i}.png') for i in range(1,5)]
+ball_sizes = [i.get_rect().size for i in ball_imgs]
+# ball speeds. Larger faster
+ball_speed_y = [i for i in range(-18, -8, 4)]
+balls = []
+# the first ball
+balls.append({
+    'x': 50, # x position
+    'y': 50,
+    'img_idx': 0, # imgage index
+    'to_x': 3, # x direction
+    'to_y': -6, 
+    'init_spd_y': ball_speed_y[0]
+})
+
 
 # eventloop
 running = True
@@ -56,8 +67,6 @@ while running:
     delta = clock.tick(frame_rate)
     # for the weapon cooldown
     current_time = pygame.time.get_ticks()
-    
-    print()
 
     for event in pygame.event.get(): # cheking events
         if event.type == pygame.QUIT: # if the event is QUIT
@@ -72,24 +81,47 @@ while running:
         character_x_pos += character_speed * delta
     if keys[pygame.K_SPACE] and current_time - last_shot_time > weapon_cooldown:
         weapon_x_pos = character_x_pos + character_width/2 - weapon_width/2
-        weapon_y_pos = character_y_pos 
+        weapon_y_pos = character_y_pos
         weapons.append([weapon_x_pos, weapon_y_pos])
         last_shot_time = current_time
     # adjust weapons' y positions
     for w in weapons:
-        w[1] = w[1] - weapon_speed
+        w[1] -= weapon_speed
+    # remove projectiles when it hits the ceiling
+    weapons = [w for w in weapons if w[1] > 0]
 
     # prevent the character from leaving the screen
     if character_x_pos < 0:
         character_x_pos = 0
     elif character_x_pos > screen_width - character_width:
         character_x_pos = screen_width - character_width
+    
+    # adjust balls' positions
+    for b in balls:
+        ball_width = ball_sizes[b.get('img_idx')][0]
+        ball_height = ball_sizes[b.get('img_idx')][1]
+        # bounce the ball on x axis when it hits the walls
+        if b.get('x') < 0 or b.get('x') > screen_width - ball_width:
+            b['to_x'] *= -1
+        # bounce the ball on y axis when it hits the stage
+        if b.get('y') >= screen_height - stage_height - ball_height:
+            b['to_y'] = b.get('init_spd_y')
+        # apply the gravity
+        else:
+            b['to_y'] += 0.5
+        # adjust the position of the ball
+        b['x'] += b.get('to_x')
+        b['y'] += b.get('to_y')
 
+    
     screen.blit(background, (0, 0)) # draw the background
-    screen.blit(stage, (0, screen_height-stage_height)) # draw the stage
-    # draw weapons
+    # draw projectiles
     for weapon_x_pos, weapon_y_pos in weapons:
         screen.blit(weapon, (weapon_x_pos, weapon_y_pos))
+    # draw balls
+    for b in balls:
+        screen.blit(ball_imgs[b.get('img_idx')], (b.get('x'), b.get('y')))
+    screen.blit(stage, (0, screen_height-stage_height)) # draw the stage
     screen.blit(character, (character_x_pos, character_y_pos))
     pygame.display.update() # refresh the background
 
