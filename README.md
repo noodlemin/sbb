@@ -1,4 +1,4 @@
-# sbb (Super Buster Bros)
+# Super Buster Bros (Pang)
 - Original game play: https://www.youtube.com/watch?v=d6rJctconM0
 - Creating the game from scratch using Python.
 - Lessons Learned
