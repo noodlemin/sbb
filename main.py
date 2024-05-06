@@ -3,27 +3,27 @@ import asyncio
 
 # initialize pygame
 pygame.init()
-
 # screen setup
 screen_width = 640
 screen_height = 480
 screen = pygame.display.set_mode((screen_width, screen_height))
-
-# title setup
-pygame.display.set_caption('Super Buster Bros')
-
 # frame rate
 clock = pygame.time.Clock()
 frame_rate = 30
 
-# load the background
-background = pygame.image.load('./images/background.jpg')
-
 async def main():
-    # load the stage
-    stage = pygame.image.load('./images/stage.png')
-    stage_size = stage.get_rect().size
-    stage_height = stage_size[1] # to put the character on the stage
+    # for game messages
+    game_font = pygame.font.Font(None, 40)
+    total_time = 60
+    start_ticks = pygame.time.get_ticks() # start time
+
+    # title setup
+    pygame.display.set_caption('Super Buster Bros')
+
+    
+
+    # load the background
+    background = pygame.image.load('./images/background.jpg')
 
     # load the character
     character  = pygame.image.load('./images/character.png')
@@ -32,7 +32,7 @@ async def main():
     character_height = character_size[1]
     # character initial position
     character_x_pos = screen_width/2 - character_width/2 
-    character_y_pos = screen_height - stage_height - character_height
+    character_y_pos = screen_height - character_height
     character_speed = 0.3
 
     # load the weapon
@@ -64,16 +64,11 @@ async def main():
     weapon_to_remove = -1
     ball_to_remove = -1
 
-    # for game messages
-    game_font = pygame.font.Font(None, 40)
-    total_time = 60
-    start_ticks = pygame.time.get_ticks() # start time
+
 
     # game result message
     game_result = "Game Over"
-
-
-# eventloop
+    # eventloop
     running = True
     while running:
         # set the frame rate
@@ -117,7 +112,7 @@ async def main():
             if b.get('x') < 0 or b.get('x') > screen_width - ball_width:
                 b['to_x'] *= -1
             # bounce the ball on y axis when it hits the stage
-            if b.get('y') >= screen_height - stage_height - ball_height:
+            if b.get('y') >= screen_height - ball_height:
                 b['to_y'] = b.get('init_spd_y')
             # apply the gravity
             else:
@@ -212,7 +207,7 @@ async def main():
         for b in balls:
             screen.blit(ball_imgs[b.get('img_idx')], (b.get('x'), b.get('y')))
 
-        screen.blit(stage, (0, screen_height-stage_height)) # draw the stage
+        # screen.blit(stage, (0, screen_height-stage_height)) # draw the stage
         screen.blit(character, (character_x_pos, character_y_pos))
 
         # calculate the elapsed time and draw on the screen
@@ -225,18 +220,18 @@ async def main():
             game_result = "Time Over"
             running = False
         
-
         pygame.display.update() # refresh the background
 
     # draw the end of the game message
-    msg = game_font.render(game_result, True, (255, 255, 0)) # 노란색
+    msg = game_font.render(game_result, True, (255, 255, 0)) 
     msg_rect = msg.get_rect(center=(int(screen_width / 2), int(screen_height / 2)))
     screen.blit(msg, msg_rect)
     pygame.display.update()
 
+    await asyncio.sleep(0)
     # end the game
     pygame.time.delay(2000) # 2000 ms
-    pygame.quit()
-    await asyncio.sleep(0)
+    # pygame.quit()
+    
 
 asyncio.run(main())
